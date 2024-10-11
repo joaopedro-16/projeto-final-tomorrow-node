@@ -1,9 +1,8 @@
 const jwt = require("jsonwebtoken")
 const UserModel = require('../models/userModel')
 const connection = require('../config/db')
+const path = require('path');
 
-// const express = require('express');
-// const app = express()
 
 function authentication(req, res, next) {
   const auth = req.headers.authorization;
@@ -28,56 +27,44 @@ function authentication(req, res, next) {
   });
 }
 
-// app.use(authentication)
+function renderUserLogin(req, res) {
+  res.sendFile(path.resolve('./views/login.html'));
+  console.log('x')
+}
 
-// app.post("/login", (req, res) => {
-//   const user = req.body;
 
-//   const token = jwt.sign({ nome: user.nome }, process.env.TOKEN_KEY);
-
-//   console.log(user);
-
-//   const query = `SELECT * FROM usuarios WHERE nome='${user.nome}'`;
-
-//   connection.query(query, (err, result) => {
-//     if (err) return res.status(500).send({ message: "Something went wrong", err });
-
-//     if (result.length === 0) return res.status(404).send({ message: "User not found" });
-
-//     if (result[0].senha !== user.senha) return res.status(401).send({ message: "Wrong password." });
-
-//     return res.status(200).send({ message: "User successfully Logged in", token: token });
-//   });
-// });
+function registerUser(req, res) {
+  const { nome, senha } = req.body; //Resgatando dados do formulário
+  if (!nome || !senha) { //Tratamento de erro caso não há dados
+    return res.status(400).send('Nome e senha são obrigatórios');
+  }
+  UserModel.registerUser(nome, senha, (err, result) => {
+    if (err) {
+      res.status(500).send('Erro ao registrar usuário');
+    } else {
+      res.status(200).send("Usuario registrado");
+    }
+  });
+}
 
 function loginUser(req, res) {
-  const user = req.body;
-  const token = jwt.sign({ nome: user.nome }, process.env.TOKEN_KEY);
+  const user = req.body
 
-  const query = `SELECT * FROM usuarios WHERE nome = ?`;
-
-  connection.query(query, [user.nome], (err, result) => {
+  UserModel.loginUser(user.nome, (err, result) => {
+    console.log(err)
+    console.log(result)
     if (err) return res.status(500).send({ message: "Something went wrong", err });
 
     if (result.length === 0) return res.status(404).send({ message: "User not found" });
 
     if (result[0].senha !== user.senha) return res.status(401).send({ message: "Wrong password." });
 
-    return res.status(200).send({ message: "User successfully logged in", token: token });
-  });
-};
-
-function getAllUsers(req, res) {
-  UserModel.getAll((err, users) => {
-    console.log(users)
-    if (err) {
-      res.status(500).send('Erro ao buscar o usuário')
-    } else {
-      res.status(200).send(users)
-    }
+    // return res.status(200).send({ message: "User successfully Logged in", token: token });
   })
 }
 
+
+
 module.exports = {
-  authentication, loginUser, getAllUsers
+  authentication, renderUserLogin, registerUser, loginUser
 };
