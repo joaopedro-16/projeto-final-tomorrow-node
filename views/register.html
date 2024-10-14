@@ -4,13 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
+  <title>Registrar</title>
 </head>
 
 <body>
-
-  <h1>Login</h1>
-  <form id="loginForm">
+  <h1>Registrar</h1>
+  <form id="registerForm">
     <label for="nome">Nome</label>
     <input type="text" name="nome" required />
 
@@ -21,14 +20,13 @@
   </form>
 
   <script>
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault(); // Impede o envio padrão do formulário
 
       const nome = document.querySelector('input[name="nome"]').value;
       const senha = document.querySelector('input[name="senha"]').value;
 
-      const response = await fetch('/user/login', {
+      const response = await fetch('/user/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -37,16 +35,14 @@
       });
 
       if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token); // Armazenar o token
-        window.location.href = '/user/feed'; // Redirecionar para o feed
+        alert('Usuário registrado com sucesso!'); // Exibir mensagem de sucesso
+        window.location.href = '/user/login'; // Redirecionar para a página de login
       } else {
         const errorData = await response.json();
         alert(errorData.message); // Exibir mensagem de erro
       }
     });
   </script>
-
 </body>
 
 </html>

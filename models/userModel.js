@@ -14,8 +14,8 @@ exports.registerUser = (nome, senha, callback) => {
 }
 
 exports.loginUser = (nome, callback) => {
-  const query = `SELECT * FROM usuarios WHERE nome='${nome}'`;
-  db.query(query, (err, result) => {
+  const query = 'SELECT * FROM usuarios WHERE nome = ? ';
+  db.query(query, [nome], (err, result) => {
     callback(err, result)
   });
 }

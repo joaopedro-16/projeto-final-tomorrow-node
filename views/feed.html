@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feed</title>
+</head>
+
+<body>
+  <h1>Bem-vindo ao Feed!</h1>
+  <p>Escreva seu post abaixo:</p>
+
+  <form id="postForm">
+    <textarea name="conteudo" placeholder="Escreva aqui seu post..." rows="4" cols="50"></textarea>
+    <br>
+    <button type="submit">Enviar post</button>
+  </form>
+
+  <h2>Posts:</h2>
+  <div id="post-list"></div>
+
+  <script>
+    // Script para enviar um post
+    document.querySelector('#postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const conteudo = document.querySelector('textarea[name="conteudo"]').value;
+      const token = localStorage.getItem('token'); // Recuperar o token do localStorage
+
+      const response = await fetch('/user/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Incluir o token no cabeçalho
+        },
+        body: JSON.stringify({ conteudo })
+      });
+
+      if (response.ok) {
+        alert('Post criado com sucesso');
+        window.location.reload(); // Recarregar a página para mostrar os novos posts
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message); // Exibir mensagem de erro
+      }
+    });
+
+    // Função para deletar post
+    async function deletePost(postId) {
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`/user/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        alert('Post deletado com sucesso');
+        loadPosts(); // Recarregar os posts após deletar
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message); // Exibir mensagem de erro
+      }
+    }
+
+    // Função para carregar os posts
+    async function loadPosts() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/user/posts', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro: ${response.status} ${response.statusText}`);
+        }
+
+        const posts = await response.json();
+        console.log('Posts recebidos:', posts); // Verifique os dados recebidos
+        const postList = document.getElementById('post-list');
+
+        if (posts.length > 0) {
+          postList.innerHTML = posts.map(post => `
+            <div>
+              <p><strong>Usuário ${post.usuario_id}:</strong> ${post.conteudo}</p>
+              <button onclick="deletePost(${post.id})">Deletar</button>
+            </div>
+          `).join('');
+        } else {
+          postList.innerHTML = '<p>Nenhum post disponível.</p>';
+        }
+      } catch (error) {
+        console.error('Erro ao carregar posts:', error);
+      }
+    }
+
+    // Carregar os posts ao carregar a página
+    window.onload = loadPosts;
+  </script>
+</body>
+
+</html>

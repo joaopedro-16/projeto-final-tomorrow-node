@@ -1,10 +1,10 @@
 const mysql = require('mysql2')
 
-const connection = mysql.createConnection({ //criação da conexão do mysql
-  host: 'localhost', //host utilizado
-  user: 'aluno', //usuário do bd
-  password: 'aluno', //senha do bd
-  database: 'node' //nome do schema
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'node'
 });
 
 connection.connect((err) => {
@@ -22,12 +22,29 @@ connection.connect((err) => {
     );
   `;
 
+  const criarPosts = `
+    CREATE TABLE IF NOT EXISTS posts (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      conteudo TEXT NOT NULL,
+      usuario_id INT,
+      FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+    );
+  `;
+
   connection.query(criarUsuario, (err, result) => {
     if (err) {
       console.error('Erro ao criar tabela:', err);
       return;
     }
     console.log('Tabela "usuarios" criada com sucesso!');
+  });
+
+  connection.query(criarPosts, (err, result) => {
+    if (err) {
+      console.error('Erro ao criar tabela "posts":', err);
+      return;
+    }
+    console.log('Tabela "posts" criada com sucesso!');
   });
 });
 
